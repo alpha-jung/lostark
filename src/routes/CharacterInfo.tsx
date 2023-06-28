@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { Badge, Card, Col, Container, Nav, Row } from "react-bootstrap";
+import { Badge, Card, Col, Container, Nav, Row, ProgressBar } from "react-bootstrap";
 import { useParams } from "react-router-dom";
 
 function CharacterInfo() {
@@ -46,6 +46,10 @@ function CharacterInfo() {
         ArmorySkills?: any[],
         Collectibles?: any[],
         ColosseumInfo?: any
+    }
+
+    function removeTag(str: string) {
+      return str.replace(/<[^>]*>?/g, '');
     }
 
     let { name } = useParams();
@@ -115,7 +119,7 @@ function CharacterInfo() {
                         <br />
                         <br />
                         <br />
-                        <h3>{name}</h3>
+                        {name} <br />
                         {characterInfo.ArmoryProfile?.Title}
                         <br />
                         <br />
@@ -172,49 +176,143 @@ function CharacterInfo() {
                 <Row>
                   <Col sm={4}>
                     <Card.Body>
-                        <Row>
-                            <Col sm={6}>
-                                <h6>아이템</h6>
-                                <h5>{characterInfo.ArmoryProfile?.ItemMaxLevel}</h5>
-                            </Col>
-                            <Col sm={6}>
-                                <h6>전투</h6>
-                                <h5>{characterInfo.ArmoryProfile?.CharacterLevel}</h5>
-                            </Col>
-                        </Row>
-                        <br />
-                        <Row>
-                            <Col sm={6}>
-                                <h6>특화</h6>
-                                <h5></h5>
-                                <h6>특성합</h6>
-                                <h6>공격력</h6>
-                                <h6>최대 생명력</h6>
-                            </Col>
-                            <Col sm={6}>
-
-                            </Col>
-                        </Row>
-                        <br />
-                        <Row>
-                            <Col>
-                                {
-                                    characterInfo.ArmoryEngraving?.Effects ?
-                                        characterInfo.ArmoryEngraving.Effects.map((data) => {
-                                            return (
-                                                <div>
-                                                    { data.Name }
-                                                </div>
-                                            )
-                                        })
-                                    : null
+                      <Row>
+                        <Col sm={6}>
+                          <h6>아이템</h6>
+                          <h5>{characterInfo.ArmoryProfile?.ItemMaxLevel}</h5>
+                        </Col>
+                        <Col sm={6}>
+                          <h6>전투</h6>
+                          <h5>{characterInfo.ArmoryProfile?.CharacterLevel}</h5>
+                        </Col>
+                      </Row>
+                      <br />
+                      <Row>
+                        <Col sm={6}>
+                          {characterInfo.ArmoryProfile?.Stats?.map(
+                            (data: any, i: number) => {
+                              return (
+                                <p key={i} style={{ fontSize: "14px" }}>
+                                  {data.Type}
+                                </p>
+                              );
+                            }
+                          )}
+                        </Col>
+                        <Col sm={6}>
+                          {characterInfo.ArmoryProfile?.Stats?.map(
+                            (data: any, i: number) => {
+                              return (
+                                <p key={i} style={{ fontSize: "14px" }}>
+                                  {data.Value}
+                                </p>
+                              );
+                            }
+                          )}
+                        </Col>
+                      </Row>
+                      <br />
+                      <Row>
+                        <Col>
+                          {characterInfo.ArmoryEngraving?.Effects
+                            ? characterInfo.ArmoryEngraving.Effects.map(
+                                (data: any, i: number) => {
+                                  return <p key={i}>{data.Name}</p>;
                                 }
-                            </Col>
-                        </Row>
+                              )
+                            : null}
+                        </Col>
+                      </Row>
                     </Card.Body>
                   </Col>
                   <Col sm={8}>
+                    <Card.Body>
+                      <Row>
+                        <Col>
+                          장비 <br />
+                          {
+                            characterInfo.ArmoryEquipment?.map((data: any, i: number) => {
+                              if(i >= 0 && i <= 5) {
+                                let toolTip = JSON.parse(data.Tooltip);
+                                let equipQuality = toolTip.Element_001.value.qualityValue;
+                                let equipLevel = removeTag(toolTip.Element_000.value).split(' ')[0].replace('+', '');
+                                
+                                console.log(toolTip);
 
+                                return (
+                                  <div style={{ float: 'left' }} key={i}>
+                                    <img src={data.Icon} />
+                                    <ProgressBar now={equipQuality} label={`${equipQuality}`}></ProgressBar>
+                                    <Badge bg="secondary">{data.Type} {equipLevel}</Badge>
+                                  </div>
+                                  
+                                )
+                              }
+                            })
+                          }
+                        </Col>
+                      </Row>
+                      <br />
+                      <Row>
+                        <Col>
+                          장신구 <br />
+                          {
+                            characterInfo.ArmoryEquipment?.map((data: any, i: number) => {
+                              if(i >= 6 && i <= 12) {
+                                let toolTip = JSON.parse(data.Tooltip);
+                                let equipQuality = toolTip.Element_001.value.qualityValue;
+                                let stoneEffect = '';
+                                let braceletOption = '';
+
+                                if(data.Type == '어빌리티 스톤') {
+                                  let stoneEffectObj = toolTip.Element_006.value.Element_000.contentStr;
+
+                                  for(let key in stoneEffectObj) {
+                                    let stoneEffectSplit = removeTag(stoneEffectObj[key].contentStr).split(' ');
+                                    stoneEffect += stoneEffectSplit[stoneEffectSplit.length - 1].replace('+', '');
+                                  }
+                                }
+
+                                if(data.Type == '팔찌') {
+                                  // let braceletOptionVal = removeTag(toolTip.Element_004.value.Element_001);
+                                  // console.log(braceletOptionVal);
+
+                                  braceletOption = toolTip.Element_004.value.Element_001;
+                                }
+
+                                console.log(toolTip);
+
+                                return (
+                                  <div style={{ float: 'left' }} key={i}>
+                                    <img src={data.Icon} />
+                                    {
+                                      equipQuality != -1 ?
+                                      <ProgressBar now={equipQuality} label={`${equipQuality}`}></ProgressBar>
+                                      :
+                                      null
+                                    }
+                                    {
+                                      data.Type == '어빌리티 스톤' ?
+                                      <ProgressBar now={parseInt(stoneEffect)} label={`${stoneEffect}`}></ProgressBar>
+                                      :
+                                      null
+                                    }
+                                    {
+                                      data.Type == '팔찌' ?
+                                      <div dangerouslySetInnerHTML= { { __html: braceletOption } }></div>
+                                      :
+                                      null
+                                    }
+                                    <Badge bg="secondary">{data.Type}</Badge>
+                                  </div>
+                                  
+                                )
+                              }
+                            })
+                          }
+                        </Col>
+                      </Row>
+                    </Card.Body>
                   </Col>
                 </Row>
               </Card>

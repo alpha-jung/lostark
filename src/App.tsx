@@ -22,6 +22,12 @@ function App() {
     navigate('/character/' + name);
   }
 
+  let handleKeyDown = (e: any) => {
+    if(e.key === 'Enter') {
+      searchCharacter();
+    }
+  }
+
   return (
     <div>
       <Navbar expand="lg">
@@ -41,6 +47,7 @@ function App() {
               aria-label="Search"
               value={name}
               onChange={changeName}
+              onKeyDown={handleKeyDown} 
             />
             <Button variant="outline-success" size="sm" onClick={() => { searchCharacter() }}>Search</Button>
           </Form>
