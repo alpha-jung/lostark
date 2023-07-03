@@ -7,6 +7,7 @@ import { removeTag } from "../../util";
 import Battle from "./Battle";
 import Naesil from "./Naesil"; 
 import Loading from "../../Loading";
+import Avatar from "./Avatar";
 
 function CharacterInfo() {
     const token = process.env.REACT_APP_LOA_API_KEY;
@@ -14,21 +15,55 @@ function CharacterInfo() {
     let [ characterInfo, setCharacterInfo ] = useState<CharacterInfo>({});
     let [ tab, setTab ] = useState('battle');
 
-    let getInfo = axios.get(`https://developer-lostark.game.onstove.com/armories/characters/${name}`,
-        {
-            params: {
+    // let getInfo = axios.get(`https://developer-lostark.game.onstove.com/armories/characters/${name}`,
+    //     {
+    //         params: {
 
-            },
+    //         },
+    //         headers: {
+    //             Authorization: 'bearer ' + token
+    //         }
+    //     })
+    //     .then((res) => {
+    //         // console.log(res);
+
+    //         // setCharacterInfo(res.data);
+    //         return res.data;
+    //     });
+
+    let getInfo = axios.all(
+      [
+        axios.get(`https://developer-lostark.game.onstove.com/armories/characters/${name}`, 
+          {
+            params: {},
             headers: {
-                Authorization: 'bearer ' + token
+              Authorization: 'bearer ' + token
             }
-        })
-        .then((res) => {
-            // console.log(res);
+          }
+        ),
+        axios.get(`https://developer-lostark.game.onstove.com/characters/${name}/siblings`, 
+          {
+            params: {},
+            headers: {
+              Authorization: 'bearer ' + token
+            }
+          }
+        )
+      ]
+    )
+    .then(
+      axios.spread((res1, res2) => {
+        let obj: any = new Object();
 
-            // setCharacterInfo(res.data);
-            return res.data;
-        });
+        for(let key in res1.data) {
+          obj[key] = res1.data[key];
+        }
+
+        obj.Characters = res2.data;
+
+        return obj;
+      })
+    )
 
     const { data, isLoading, isError } = useQuery('getInfo', () => getInfo, {});
 
@@ -143,6 +178,11 @@ function CharacterInfo() {
             {
               tab == 'naesil' ?
               <Naesil data={characterInfo}></Naesil>
+              : null
+            }
+            {
+              tab == 'avatar' ?
+              <Avatar data={characterInfo}></Avatar>
               : null
             }
           </Card>
