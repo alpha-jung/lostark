@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
-import { Card, Row, Col } from "react-bootstrap";
+import { Card, Row, Col, Badge, Tab, Nav } from "react-bootstrap";
 
 function Naesil({ data }: {data: any}) {
     let [tendencies, setTendencies] = useState<any[]>([]);
     let [equipEtc, setEquipEtc] = useState<any[]>([]);
+    let [collectibles, setCollectibles] = useState<any[]>([]);
+    let [collectScore, setCollectScore] = useState(0);
 
     function setArmoryEquipment(data: any) {
         let etcArr: any[] = [];
@@ -17,65 +19,160 @@ function Naesil({ data }: {data: any}) {
         setEquipEtc(etcArr);
     }
 
+    function setCollectScorePercent(data: any) {
+        let totalCollectScore = 0;
+        let currCollectScore = 0;
+
+        data.map((c: any, i: number) => {
+            currCollectScore += c.Point;
+            totalCollectScore += c.MaxPoint;
+        });
+
+        setCollectScore((currCollectScore / totalCollectScore) * 100);
+    }
+
     useEffect(() => {
         setTendencies(data.ArmoryProfile.Tendencies);
 
         if(data.ArmoryEquipment != null) {
             setArmoryEquipment(data.ArmoryEquipment);
         }
+
+        if(data.Collectibles != null) {
+            setCollectibles(data.Collectibles);
+            setCollectScorePercent(data.Collectibles);
+        }
     }, []);
 
     return (
-        <>
-            <Card>
+      <>
+        <Card>
+          <Row>
+            <Col sm={8}>
+              <Row>
+                <Col>
+                  {tendencies?.map((data: any, i: number) => {
+                    return (
+                      <div
+                        key={i}
+                        style={{ float: "left", paddingRight: "20px" }}
+                      >
+                        <p>
+                          {data.Type} {data.Point}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </Col>
+              </Row>
+              <Row>
+                <Col>
+                  <div>생활 항목</div>
+                </Col>
+              </Row>
+            </Col>
+            <Col sm={4}>
+              {equipEtc.map((data: any, i: number) => {
+                return (
+                  <div key={i} style={{ textAlign: "left" }}>
+                    <img src={data.Icon} style={{ width: "10%" }} />
+                    {data.Name}
+                  </div>
+                );
+              })}
+            </Col>
+          </Row>
+          <br />
+          <Row>
+            <Col>
+              수집품 <Badge bg="secondary">{collectScore.toFixed(3)}%</Badge>
+            </Col>
+          </Row>
+          <br />
+          <Tab.Container defaultActiveKey="0">
+            <Row>
+              <Col sm={4}>
                 <Row>
-                    <Col sm={8}>
-                        <Row>
-                            <Col>
+                  <Col>
+                    <Nav variant="pills" className="flex-column">
+                      {collectibles.map((data: any, i: number) => {
+                        return (
+                          <Nav.Item key={i}>
+                            <Nav.Link eventKey={i}>
+                              <img src={data.Icon} style={{ width: "10%" }} />
+                              {data.Type}
+                              <p>
+                                {data.Point} / {data.MaxPoint}
+                              </p>
+                            </Nav.Link>
+                          </Nav.Item>
+                        );
+                      })}
+                    </Nav>
+                  </Col>
+                </Row>
+              </Col>
+              <Col sm={8}>
+                <Tab.Content>
+                    {collectibles.map((data: any, i: number) => {
+                        return (
+                          <Tab.Pane key={i} eventKey={i}>
+                            <div style={{ width: '100%', float: 'left' }}>
+                              <div
+                                style={{
+                                  float: "left",
+                                  margin: "0 auto",
+                                  padding: "10px",
+                                }}
+                              >
+                                <h5>{data.Type}</h5>
+                              </div>
+                              <div
+                                style={{
+                                  float: "right",
+                                  margin: "0 auto",
+                                  padding: "10px",
+                                }}
+                              >
+                                <h5>
+                                  {data.Point} / {data.MaxPoint}
+                                </h5>
+                              </div>
+                            </div>
+
+                            <div style={{ width: '100%', padding: '10px' }}>
                                 {
-                                    tendencies?.map((data: any, i: number) => {
+                                    data.CollectiblePoints.map((cp: any, j: number) => {
+                                        let badgeBg = 'secondary';
+
+                                        if(cp.Point == cp.MaxPoint) {
+                                            badgeBg = 'success';
+                                        }
+
                                         return (
-                                            <div key={i} style={{ float: 'left', paddingRight: '20px' }}>
-                                                <p>{data.Type} {data.Point}</p>
-                                            </div>
-                                        )
+                                          <div style={{ width: '100%', marginBottom: '10px' }}>
+                                            <Badge bg={badgeBg}>{j + 1}</Badge>
+                                            {cp.PointName}
+                                            {
+                                                data.Type == '모코코 씨앗' ?
+                                                <p>{cp.Point} / {cp.MaxPoint}</p>
+                                                : null
+                                            }
+                                          </div>
+                                        );
                                     })
                                 }
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col>
-                                <div>생활 항목</div>
-                            </Col>
-                        </Row>
-                    </Col>
-                    <Col sm={4}>
-                        {
-                            equipEtc.map((data: any, i: number) => {
-                                return (
-                                    <div key={i} style={{ textAlign: 'left' }}>
-                                        <img src={data.Icon} style={{ width: '10%' }}/>
-                                        {data.Name}
-                                    </div>
-                                )
-                            })
-                        }
-                    </Col>
-                </Row>
-                <br />
-                <Row>
-                    <Col>
-                        수집품
-                    </Col>
-                </Row>
-                <br />
-                <Row>
-                    <Col sm={4}></Col>
-                    <Col sm={8}></Col>
-                </Row>
-            </Card>
-        </>
-    )
+                            </div>
+                          </Tab.Pane>
+                        );
+                      })}
+                </Tab.Content>
+              </Col>
+            </Row>
+          </Tab.Container>
+        </Card>
+      </>
+    );
 }
 
 export default Naesil;
