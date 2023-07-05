@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 import { Badge, Container, Row, Col, Card, ListGroup } from "react-bootstrap"
 import { Link } from "react-router-dom";
 
-function News() {
+function Main() {
     let [notices, setNotices] = useState<any[]>([]);
     let [events, setEvents] = useState<any[]>([]);
 
@@ -169,15 +169,19 @@ function News() {
         return data;
       });
 
+      console.log(islandsArr);
+
       islandsArr = islandsArr.filter((data: any, i: number) => {
-        let startTimes = data.StartTimes.filter((startTime: string, j: number) => {
-          let stToDate = new Date(startTime);
+        if(data.StartTimes != null) {
+          let startTimes = data.StartTimes.filter((startTime: string, j: number) => {
+            let stToDate = new Date(startTime);
+  
+            // return (now.getTime() <= stToDate.getTime()) && (fmtDateYmd(stToDate.toDateString()) == fmtDateYmd(now.toDateString()));
+            return (now.getTime() <= stToDate.getTime());
+          });
 
-          // return (now.getTime() <= stToDate.getTime()) && (fmtDateYmd(stToDate.toDateString()) == fmtDateYmd(now.toDateString()));
-          return (now.getTime() <= stToDate.getTime());
-        });
-
-        data.StartTimes = startTimes;
+          data.StartTimes = startTimes;
+        }
 
         data.RewardItems = data.RewardItems.filter((rewardItem: any, j: number) => {
           if(rewardItem.StartTimes) {
@@ -206,7 +210,7 @@ function News() {
           )
         });
 
-        if(data.StartTimes.length > 0) {
+        if(data.StartTimes && data.StartTimes.length > 0) {
           data.StartTimes = data.StartTimes.slice(0, 1);
           return data;
         }
@@ -438,4 +442,4 @@ function News() {
     );
 }
 
-export default News
+export default Main;
