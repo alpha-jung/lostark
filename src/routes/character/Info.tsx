@@ -8,6 +8,7 @@ import Battle from "./Battle";
 import Naesil from "./Naesil"; 
 import Loading from "../../Loading";
 import Avatar from "./Avatar";
+import Characters from "./Characters";
 
 function CharacterInfo() {
     const token = process.env.REACT_APP_LOA_API_KEY;
@@ -162,7 +163,7 @@ function CharacterInfo() {
                     <Nav.Link eventKey='stat' onClick={() => { setTab('stat') }}>통계</Nav.Link>
                   </Nav.Item>
                   <Nav.Item>
-                    <Nav.Link eventKey='character' onClick={() => { setTab('character') }}>캐릭터</Nav.Link>
+                    <Nav.Link eventKey='characters' onClick={() => { setTab('characters') }}>보유 캐릭터</Nav.Link>
                   </Nav.Item>
                   <Nav.Item>
                     <Nav.Link eventKey='guild' onClick={() => { setTab('guild') }}>길드</Nav.Link>
@@ -183,6 +184,11 @@ function CharacterInfo() {
             {
               tab == 'avatar' ?
               <Avatar data={characterInfo}></Avatar>
+              : null
+            }
+            {
+              tab == 'characters' ?
+              <Characters data={characterInfo}></Characters>
               : null
             }
           </Card>
