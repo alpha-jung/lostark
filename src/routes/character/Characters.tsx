@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Card, Row, Col, Badge, Tab, Nav } from "react-bootstrap";
+import { Card, Row, Col } from "react-bootstrap";
 
-function Characters({ data }: {data: any}) {
-    let [characters, setCharacters] = useState<any[]>([]);
+function Characters({ data }: {data: CharacterInfo | undefined}) {
+    let [characters, setCharacters] = useState<Characters[]>([]);
     let imgInfo = [
         { name: '워로드', src: 'https://cdn-lostark.game.onstove.com/2018/obt/assets/images/common/thumb/warlord.png' },
         { name: '버서커', src: 'https://cdn-lostark.game.onstove.com/2018/obt/assets/images/common/thumb/berserker.png' },
@@ -31,7 +31,7 @@ function Characters({ data }: {data: any}) {
     ]
 
     useEffect(() => {
-        if(data.Characters != null) {
+        if(typeof data != 'undefined' && data.Characters != null) {
             data.Characters.sort((a: any, b: any) => {
                 let ml1 = parseInt(a.ItemMaxLevel.replace(',', ''));
                 let ml2 = parseInt(b.ItemMaxLevel.replace(',', ''));

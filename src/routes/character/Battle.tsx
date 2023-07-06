@@ -1,24 +1,23 @@
-import { useParams } from "react-router-dom"
 import { removeTag } from "../../util"
 import { useEffect, useState } from "react"
-import { Badge, Card, Col, Container, Nav, Row, ProgressBar } from "react-bootstrap";
+import { Badge, Card, Col, Row, ProgressBar } from "react-bootstrap";
 
-function Battle({ data }: {data: any}) {
-    let [characterInfo, setCharacterInfo] = useState<CharacterInfo>({});
-    let [equipment, setEquipment] = useState<any[]>([]);
-    let [accessories, setAccessories] = useState<any[]>([]);
+function Battle({ data }: {data: CharacterInfo | undefined}) {
+    let [characterInfo, setCharacterInfo] = useState<CharacterInfo>();
+    let [equipment, setEquipment] = useState<ArmoryEquipment[]>([]);
+    let [accessories, setAccessories] = useState<ArmoryEquipment[]>([]);
     let [cardEffctName, setCardEffectName] = useState("");
     let [cardEffectSize, setCardEffectSize] = useState(0);
     let [cardEffectCount, setCardEffectCount] = useState(0);
-    let [mhGem, setMhGem] = useState<any[]>([]);
-    let [hyGem, setHyGem] = useState<any[]>([]);
-    let [usingSkills, setUsingSkills] = useState<any[]>([]);
+    let [mhGem, setMhGem] = useState<Gem[]>([]);
+    let [hyGem, setHyGem] = useState<Gem[]>([]);
+    let [usingSkills, setUsingSkills] = useState<ArmorySkills[]>([]);
 
-    function setArmoryEquipment(data: any) {
-        let equipArr: any[] = [];
-        let accesArr: any[] = [];
+    function setArmoryEquipment(data: ArmoryEquipment[]) {
+        let equipArr: ArmoryEquipment[] = [];
+        let accesArr: ArmoryEquipment[] = [];
         
-        data.map((e: any, i: number) => {
+        data.map((e: ArmoryEquipment, i: number) => {
             if(
                 e.Type == '무기'
                 || e.Type == '투구'
@@ -43,27 +42,33 @@ function Battle({ data }: {data: any}) {
         setAccessories(accesArr);
     }
 
-    function setCardEffect(data: any) {
+    function setCardEffect(data: ArmoryCard) {
       let cards = typeof data.Cards === 'undefined' ? [] : data.Cards;
-      let effects = typeof data.Effects[0] === 'undefined' ? [] : data.Effects[0];
+      let effects = typeof data.Effects[0] === 'undefined' ? null : data.Effects[0];
 
-      cards.forEach((card: any, i: number) => {
+      cards.forEach((card: Cards, i: number) => {
         cardEffectCount += card.AwakeTotal;
       });
 
       setCardEffectCount(cardEffectCount);
-      setCardEffectSize(effects.Items.length);
 
-      let idx = effects.Items[0].Name.search(/[0-9]/g);
-      setCardEffectName(effects.Items[0].Name.substring(0, idx));
+      if(effects != null) {
+        setCardEffectSize(effects.Items.length);
+
+        let idx = effects.Items[0].Name.search(/[0-9]/g);
+        setCardEffectName(effects.Items[0].Name.substring(0, idx));
+      }
     }
 
-    function setGem(data: any) {
-      let gemEffects = data.Effects?.sort((a: any, b: any) => {
+    function setGem(data: ArmoryGem) {
+      let gemEffects = data.Effects?.sort((a: GemEffect, b: any) => {
         return a.GemSlot - b.GemSlot;
       });
 
-      data.Gems.forEach((data: any, i: number) => {
+      let tmpMhGem: Gem[] = [];
+      let tmpHyGem: Gem[] = [];
+
+      data.Gems.forEach((data: Gem, i: number) => {
         let obj: any = new Object();
         obj.Name = removeTag(data.Name);
         obj.Effect = gemEffects[i];
@@ -71,17 +76,20 @@ function Battle({ data }: {data: any}) {
         obj.Icon = data.Icon;
 
         if (obj.Name.indexOf("멸화") > -1) {
-          mhGem.push(obj);
+          tmpMhGem.push(obj);
         } else {
-          hyGem.push(obj);
+          tmpHyGem.push(obj);
         }
       });
+
+      setMhGem(tmpMhGem);
+      setHyGem(tmpHyGem);
     }
 
-    function setSkills(data: any) {
-      let tmp: any[] = [];
+    function setSkills(data: ArmorySkills[]) {
+      let tmp: ArmorySkills[] = [];
 
-      data.map((skill: any, i: number) => {
+      data.map((skill: ArmorySkills, i: number) => {
         if (!skill.IsAwakening && (skill.Rune != null || skill.Level > 1)) {
           skill.Tripods = skill.Tripods.filter((tp: any) => {
             return tp.IsSelected;
@@ -95,6 +103,8 @@ function Battle({ data }: {data: any}) {
     }
 
     useEffect(() => {
+      if(typeof data != 'undefined') {
+        console.log(data);
         setCharacterInfo(data);
 
         if(data.ArmoryEquipment != null) {
@@ -110,7 +120,8 @@ function Battle({ data }: {data: any}) {
         }
 
         setSkills(data.ArmorySkills);
-    }, [characterInfo]);
+      }
+    }, [data]);
     
     return (
       <>
@@ -121,18 +132,18 @@ function Battle({ data }: {data: any}) {
                 <Row>
                   <Col sm={6}>
                     <h6>아이템</h6>
-                    <h5>{characterInfo.ArmoryProfile?.ItemMaxLevel}</h5>
+                    <h5>{characterInfo?.ArmoryProfile.ItemMaxLevel}</h5>
                   </Col>
                   <Col sm={6}>
                     <h6>전투</h6>
-                    <h5>{characterInfo.ArmoryProfile?.CharacterLevel}</h5>
+                    <h5>{characterInfo?.ArmoryProfile.CharacterLevel}</h5>
                   </Col>
                 </Row>
                 <br />
                 <Row>
                   <Col sm={6}>
-                    {characterInfo.ArmoryProfile?.Stats?.map(
-                      (data: any, i: number) => {
+                    {characterInfo?.ArmoryProfile.Stats.map(
+                      (data: Stats, i: number) => {
                         return (
                           <p key={i} style={{ fontSize: "14px" }}>
                             {data.Type}
@@ -142,8 +153,8 @@ function Battle({ data }: {data: any}) {
                     )}
                   </Col>
                   <Col sm={6}>
-                    {characterInfo.ArmoryProfile?.Stats?.map(
-                      (data: any, i: number) => {
+                    {characterInfo?.ArmoryProfile.Stats.map(
+                      (data: Stats, i: number) => {
                         return (
                           <p key={i} style={{ fontSize: "14px" }}>
                             {data.Value}
@@ -156,13 +167,12 @@ function Battle({ data }: {data: any}) {
                 <br />
                 <Row>
                   <Col>
-                    {characterInfo.ArmoryEngraving?.Effects
-                      ? characterInfo.ArmoryEngraving.Effects.map(
-                          (data: any, i: number) => {
+                    {characterInfo?.ArmoryEngraving.Effects.map(
+                          (data: Item, i: number) => {
                             return <p key={i}>{data.Name}</p>;
                           }
                         )
-                      : null}
+                    }
                   </Col>
                 </Row>
               </Card.Body>
@@ -174,7 +184,7 @@ function Battle({ data }: {data: any}) {
                     장비 <br />
                     {/* {characterInfo.ArmoryEquipment?.slice(0, 6).map( */}
                     {equipment.map(
-                      (data: any, i: number) => {
+                      (data: ArmoryEquipment, i: number) => {
                           let toolTip = JSON.parse(data.Tooltip);
                           let equipQuality =
                             toolTip.Element_001.value.qualityValue;
@@ -206,7 +216,7 @@ function Battle({ data }: {data: any}) {
                     장신구 <br />
                     {/* {characterInfo.ArmoryEquipment?.slice(6, 13).map( */}
                     {accessories.map(
-                      (data: any, i: number) => {
+                      (data: ArmoryEquipment, i: number) => {
                           let toolTip = JSON.parse(data.Tooltip);
                           let equipQuality =
                             toolTip.Element_001.value.qualityValue;
@@ -270,7 +280,7 @@ function Battle({ data }: {data: any}) {
                 <Row>
                   <Col sm={6}>
                     보석 <br />
-                    {mhGem.map((data: any, i: number) => {
+                    {mhGem.map((data: Gem, i: number) => {
                       return (
                         <div
                           style={{
@@ -291,7 +301,7 @@ function Battle({ data }: {data: any}) {
                   </Col>
                   <Col sm={6}>
                     <br />
-                    {hyGem.map((data: any, i: number) => {
+                    {hyGem.map((data: Gem, i: number) => {
                       return (
                         <div
                           style={{
@@ -315,8 +325,8 @@ function Battle({ data }: {data: any}) {
                 <Row>
                   <Col>
                     카드 <br />
-                    {characterInfo.ArmoryCard?.Cards?.map(
-                      (data: any, i: number) => {
+                    {characterInfo?.ArmoryCard.Cards.map(
+                      (data: Cards, i: number) => {
                         return (
                           <div
                             style={{
@@ -352,8 +362,8 @@ function Battle({ data }: {data: any}) {
                     <Col>
                       스킬{" "}
                       <Badge bg="secondary">
-                        SP {characterInfo.ArmoryProfile?.UsingSkillPoint} /{" "}
-                        {characterInfo.ArmoryProfile?.TotalSkillPoint}
+                        SP {characterInfo?.ArmoryProfile.UsingSkillPoint} /{" "}
+                        {characterInfo?.ArmoryProfile.TotalSkillPoint}
                       </Badge>{" "}
                       <br />
                     </Col>
@@ -373,7 +383,7 @@ function Battle({ data }: {data: any}) {
                                 {usingSkills[i].Level}
                               </div>
                               {usingSkills[i].Tripods.map(
-                                (tp: any, j: number) => {
+                                (tp: Tripod, j: number) => {
                                   return (
                                     <div key={j}>
                                       <p>
