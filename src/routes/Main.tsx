@@ -6,10 +6,10 @@ import { Badge, Container, Row, Col, Card, ListGroup } from "react-bootstrap"
 import { Link } from "react-router-dom";
 
 function Main() {
-    let [notices, setNotices] = useState<any[]>([]);
-    let [events, setEvents] = useState<any[]>([]);
+    let [notices, setNotices] = useState<Notices[]>([]);
+    let [events, setEvents] = useState<Events[]>([]);
 
-    let [advIslands, setAdvIslands] = useState<any[]>([]);
+    let [advIslands, setAdvIslands] = useState<Contents[]>([]);
     let [advIslandsSt, setAdvIslandsSt] = useState('');
     let [advIslandsRt, setAdvIslandsRt] = useState('');
 
@@ -71,8 +71,8 @@ function Main() {
       return returnArr;
     }
 
-    function showNotices(data :[]) {
-        data.map((data: any, i: number) => {
+    function showNotices(data :Notices[]) {
+        data.map((data: Notices, i: number) => {
           data.Date = fmtDateYmd(data.Date);
           return data;
         });
@@ -80,8 +80,8 @@ function Main() {
         setNotices(data);
     }
 
-    function showEvents(data :[]) {
-        data.map((data: any, i: number) => {
+    function showEvents(data :Events[]) {
+        data.map((data: Events, i: number) => {
           data.StartDate = fmtDateMd(data.StartDate);
           data.EndDate = fmtDateMd(data.EndDate);
           return data;
@@ -91,10 +91,10 @@ function Main() {
     }
 
     function filterStartToday(arr :[]) {
-      let islandsArr :any = [];
-      let fieldBossArr :any = [];
-      let chaosGateArr :any = [];
-      let ghostShipArr :any = [];
+      let islandsArr :Contents[] = [];
+      let fieldBossArr :Contents[] = [];
+      let chaosGateArr :Contents[] = [];
+      let ghostShipArr :Contents[] = [];
 
       let now = new Date();
 
@@ -123,55 +123,64 @@ function Main() {
 
       // console.log(occuWarSt);
 
-      islandsArr = [...arr].filter((data: any, i: number) => {
+      islandsArr = [...arr].filter((data: Contents, i: number) => {
         return data.CategoryName == '모험 섬';
       });
 
-      fieldBossArr = [...arr].filter((data: any, i: number) => {
+      fieldBossArr = [...arr].filter((data: Contents, i: number) => {
         return data.CategoryName == '필드보스';
       }).slice(0, 1);
 
-      fieldBossArr = fieldBossArr.filter((data: any, i: number) => {
-        data.StartTimes = data.StartTimes.filter((startTime: string, j: number) => {
-          let stToDate = new Date(startTime);
-          return (now.getTime() <= stToDate.getTime());
-        });
-
-        data.StartTimes = data.StartTimes.slice(0, 1);
+      fieldBossArr = fieldBossArr.filter((data: Contents, i: number) => {
+        if(data.StartTimes != null) {
+          data.StartTimes = data.StartTimes.filter((startTime: string, j: number) => {
+            let stToDate = new Date(startTime);
+            return (now.getTime() <= stToDate.getTime());
+          });
+  
+          data.StartTimes = data.StartTimes.slice(0, 1);
+        }
+        
         return data;
       });
 
-      chaosGateArr = [...arr].filter((data: any, i: number) => {
+      chaosGateArr = [...arr].filter((data: Contents, i: number) => {
         return data.CategoryName == '카오스게이트' && data.MinItemLevel == 1520;
       }).slice(0, 1);
 
-      chaosGateArr = chaosGateArr.filter((data: any, i: number) => {
-        data.StartTimes = data.StartTimes.filter((startTime: string, j: number) => {
-          let stToDate = new Date(startTime);
-          return (now.getTime() <= stToDate.getTime());
-        });
+      chaosGateArr = chaosGateArr.filter((data: Contents, i: number) => {
+        if(data.StartTimes != null) {
+          data.StartTimes = data.StartTimes.filter((startTime: string, j: number) => {
+            let stToDate = new Date(startTime);
+            return (now.getTime() <= stToDate.getTime());
+          });
 
-        data.StartTimes = data.StartTimes.slice(0, 1);
+          data.StartTimes = data.StartTimes.slice(0, 1);
+        }
+        
         return data;
       });
 
-      ghostShipArr = [...arr].filter((data: any, i: number) => {
+      ghostShipArr = [...arr].filter((data: Contents, i: number) => {
         return data.CategoryName == '유령선';
       }).slice(0, 1);
 
-      ghostShipArr = ghostShipArr.filter((data: any, i: number) => {
-        data.StartTimes = data.StartTimes.filter((startTime: string, j: number) => {
-          let stToDate = new Date(startTime);
-          return (now.getTime() <= stToDate.getTime());
-        });
-
-        data.StartTimes = data.StartTimes.slice(0, 1);
+      ghostShipArr = ghostShipArr.filter((data: Contents, i: number) => {
+        if(data.StartTimes != null) {
+          data.StartTimes = data.StartTimes.filter((startTime: string, j: number) => {
+            let stToDate = new Date(startTime);
+            return (now.getTime() <= stToDate.getTime());
+          });
+  
+          data.StartTimes = data.StartTimes.slice(0, 1);
+        }
+        
         return data;
       });
 
       console.log(islandsArr);
 
-      islandsArr = islandsArr.filter((data: any, i: number) => {
+      islandsArr = islandsArr.filter((data: Contents, i: number) => {
         if(data.StartTimes != null) {
           let startTimes = data.StartTimes.filter((startTime: string, j: number) => {
             let stToDate = new Date(startTime);
@@ -183,32 +192,38 @@ function Main() {
           data.StartTimes = startTimes;
         }
 
-        data.RewardItems = data.RewardItems.filter((rewardItem: any, j: number) => {
-          if(rewardItem.StartTimes) {
-            rewardItem.StartTimes = rewardItem.StartTimes.filter((startTime: string, k: number) => {
-              let stToDate = new Date(startTime);
-              return (now.getTime() <= stToDate.getTime()) && (fmtDateYmd(startTime) == fmtDateYmd(now.toDateString()));
-            });
-            
-            if(rewardItem.StartTimes.length > 0) {
-              rewardItem.StartTimes = rewardItem.StartTimes.slice(0, 1);
-            } else {
-              rewardItem = null;
+        if(data.RewardItems != null) {
+          data.RewardItems = data.RewardItems.filter((rewardItem: Reward, j: number) => {
+            if(rewardItem != null && rewardItem.StartTimes) {
+              rewardItem.StartTimes = rewardItem.StartTimes.filter((startTime: string, k: number) => {
+                let stToDate = new Date(startTime);
+                return (now.getTime() <= stToDate.getTime()) && (fmtDateYmd(startTime) == fmtDateYmd(now.toDateString()));
+              });
+              
+              if(rewardItem.StartTimes.length > 0) {
+                rewardItem.StartTimes = rewardItem.StartTimes.slice(0, 1);
+              } else {
+                rewardItem = null;
+              }
             }
-          }
+  
+            if(rewardItem) {
+              return rewardItem;
+            }
+          });
 
-          if(rewardItem) {
-            return rewardItem;
-          }
-        });
-
-        data.RewardItems = data.RewardItems.filter((rewardItem: any, j: number) => {
-          return (
-            data.RewardItems.findIndex((rewardItem2: any, k: number) => {
-              return rewardItem.Name === rewardItem2.Name;
-            }) === j
-          )
-        });
+          data.RewardItems = data.RewardItems.filter((rewardItem: Reward, j: number) => {
+            if(data.RewardItems != null) {
+              return (
+                data.RewardItems.findIndex((rewardItem2: Reward, k: number) => {
+                  if(rewardItem != null && rewardItem2 != null) {
+                    return rewardItem.Name === rewardItem2.Name;
+                  }
+                }) === j
+              )
+            }
+          });
+        }
 
         if(data.StartTimes && data.StartTimes.length > 0) {
           data.StartTimes = data.StartTimes.slice(0, 1);
@@ -226,29 +241,40 @@ function Main() {
 
       islandsArr = islandsArr.slice(0, 3);
 
-      if(chaosGateArr[0].StartTimes.length == 0) {
+      if(chaosGateArr[0].StartTimes != null && chaosGateArr[0].StartTimes.length == 0) {
         let nextChaosGateSt = new Date();
         nextChaosGateSt.setDate(nextChaosGateSt.getDate() + 2);
         nextChaosGateSt.setHours(11);
         nextChaosGateSt.setMinutes(0);
         nextChaosGateSt.setSeconds(0);
 
-        chaosGateArr[0].StartTimes[0] = nextChaosGateSt;
+        chaosGateArr[0].StartTimes[0] = nextChaosGateSt.toDateString();
       }
 
-      setAdvIslandsSt(fmtDateHm(islandsArr[0].StartTimes[0]));
+      if(islandsArr != null && islandsArr[0].StartTimes != null) {
+        setAdvIslandsSt(fmtDateHm(islandsArr[0].StartTimes[0]));
+      }
+      
       setAdvIslands(islandsArr);
 
-      setFieldBossSt(fmtDateHm(fieldBossArr[0].StartTimes[0]));
-      setChaosGateSt(fmtDateHm(chaosGateArr[0].StartTimes[0]));
-      setGhostShipSt(fmtDateHm(ghostShipArr[0].StartTimes[0]));
+      if(fieldBossArr != null && fieldBossArr[0].StartTimes != null) {
+        setFieldBossSt(fmtDateHm(fieldBossArr[0].StartTimes[0]));
+      }
 
+      if(chaosGateArr != null && chaosGateArr[0].StartTimes != null) {
+        setChaosGateSt(fmtDateHm(chaosGateArr[0].StartTimes[0]));
+      }
+      
+      if(ghostShipArr != null && ghostShipArr[0].StartTimes) {
+        setGhostShipSt(fmtDateHm(ghostShipArr[0].StartTimes[0]));
+      }
+      
       intervalId = window.setInterval(function () {
 
-        let [islandStart, islandRt] = calcRemainTime(islandsArr[0].StartTimes[0]);
-        let [fieldBossStart, fieldBossRt] = calcRemainTime(fieldBossArr[0].StartTimes[0]);
-        let [chaosGateStart, chaosGateRt] = calcRemainTime(chaosGateArr[0].StartTimes[0]);
-        let [ghostShipStart, ghostShipRt] = calcRemainTime(ghostShipArr[0].StartTimes[0]);
+        let [islandStart, islandRt] = calcRemainTime(islandsArr[0]?.StartTimes[0]);
+        let [fieldBossStart, fieldBossRt] = calcRemainTime(fieldBossArr[0]?.StartTimes[0]);
+        let [chaosGateStart, chaosGateRt] = calcRemainTime(chaosGateArr[0]?.StartTimes[0]);
+        let [ghostShipStart, ghostShipRt] = calcRemainTime(ghostShipArr[0]?.StartTimes[0]);
         let [occuWarStart, occuWarRt] = [false, ''];
 
         if(occuWarStimes.length != 0) {
@@ -275,7 +301,7 @@ function Main() {
           window.clearInterval(intervalId);
 
           axios.get(
-            "https://developer-lostark.game.onstove.com/gamecontents/calendar",
+            "https://developer-lostark.game.onstove.com/gamecontents/Contents",
             {
               params: {
                 // type: '공지'
@@ -319,7 +345,7 @@ function Main() {
             }
         });
 
-        let getAdvIslands = axios.get('https://developer-lostark.game.onstove.com/gamecontents/calendar', {
+        let getAdvIslands = axios.get('https://developer-lostark.game.onstove.com/gamecontents/Contents', {
             params: {
                 // type: '공지'
             },
@@ -408,11 +434,13 @@ function Main() {
                       <ListGroup.Item key={i}>
                         <img src={data.ContentsIcon} style={{ width: "10%" }} /> {data.ContentsName} <br />
                         {
+                          data.RewardItems != null ?
                           data.RewardItems.map((rewardItem :any, j :number) => {
                             return (
                               <img src={rewardItem.Icon} style={{ width: "10%" }} key={j} />
                             )
                           })
+                          : null
                         }
                       </ListGroup.Item>
                     );
