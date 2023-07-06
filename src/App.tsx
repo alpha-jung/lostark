@@ -1,13 +1,13 @@
 /* esLint-disable */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import './App.css';
 import { Nav, Navbar, Container, Form, Button } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Main from './routes/Main';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import Ranking from './routes/Ranking';
-import CharacterInfo from './routes/CharacterInfo'
+import CharacterInfo from './routes/character/Info'
 
 function App() {
   let navigate = useNavigate();
