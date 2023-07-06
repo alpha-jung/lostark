@@ -345,7 +345,7 @@ function Main() {
             }
         });
 
-        let getAdvIslands = axios.get('https://developer-lostark.game.onstove.com/gamecontents/Contents', {
+        let getAdvIslands = axios.get('https://developer-lostark.game.onstove.com/gamecontents/calendar', {
             params: {
                 // type: '공지'
             },
