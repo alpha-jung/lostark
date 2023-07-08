@@ -72,6 +72,73 @@
                         </div>
                     </div>
                     <br />
+                    <div class="row">
+                        <div class="col-sm-6">
+                            보석 <br />
+                            <div v-for="(data, i) in mhGem" :key="{i}" :style="{ width: '9%', textAlign: 'center', display: 'inline-block' }">
+                                <img :src="`${data.Icon}`" :style="{ width: '100%' }" />
+                                <span class="badge bg-secondary">
+                                    {{ data.Level }}
+                                </span>
+                            </div>
+                            <div>
+                                <span class="badge bg-secondary">멸</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <br />
+                            <div v-for="(data, i) in hyGem" :key="{i}" :style="{ width: '9%', textAlign: 'center', display: 'inline-block' }">
+                                <img :src="`${data.Icon}`" :style="{ width: '100%' }" />
+                                <span class="badge bg-secondary">
+                                    {{ data.Level }}
+                                </span>
+                            </div>
+                            <div>
+                                <span class="badge bg-secondary">홍</span>
+                            </div>
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col">
+                            카드 <br />
+                            <div v-for="(data, i) in cards" :key="{i}" :style="{ float: 'left', width: '16%', textAlign: 'center', fontSize: '5px' }">
+                                <img :src="`${data.Icon}`" :style="{ width: '100%' }" />
+                                <p>{{ data.Name }}</p>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title" :style="{ textAlign: 'left' }">{{ cardEffectName }}</h5>
+                                <p class="card-text">
+                                    <span class="badge bg-secondary">{{ cardEffectSize }}세트</span>
+                                    <span class="badge bg-secondary">{{ cardEffectCount }}각</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="row">
+                            <div class="col">
+                                스킬 
+                                <span class="badge bg-secondary">
+                                    SP {{ profile?.UsingSkillPoint }} / {{ profile?.TotalSkillPoint }}
+                                </span>
+                                <br />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div v-for="(data, i) in skills" :key="{i}" class="col-sm-4">
+                                <div>
+                                    <img :src="`${data.Icon}`" :style="{ width: '2vw' }" />
+                                    {{ data.Name }}
+                                    {{ data.Level }}
+                                </div>
+                                <div v-for="(tripod, j) in data.Tripods" :key="{j}">
+                                    <p>{{ tripod.Level }}  {{ tripod.Name }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -80,7 +147,7 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, ref, Ref, toRefs } from 'vue';
-import { CharacterInfo, ArmoryProfile, ArmoryEquipment, ArmoryEngraving, ArmoryGem, Gem, ArmorySkills } from 'CharacterInfo';
+import { CharacterInfo, ArmoryProfile, ArmoryEquipment, ArmoryEngraving, ArmoryGem, Gem, GemEffect, ArmoryCard, Cards, ArmorySkills } from 'CharacterInfo';
 import { removeTag } from '../../utils'
 
 export default defineComponent({
@@ -95,6 +162,13 @@ export default defineComponent({
         let equipment: Ref<ArmoryEquipment[]> = ref([]);
         let accessories: Ref<ArmoryEquipment[]> = ref([]);
         let engraving: Ref<ArmoryEngraving | undefined> = ref();
+        let mhGem: Ref<Gem[]> = ref([]);
+        let hyGem: Ref<Gem[]> = ref([]);
+        let cards: Ref<Cards[]> = ref([]);
+        let cardEffectCount: Ref<number> = ref(0);
+        let cardEffectSize: Ref<number> = ref(0);
+        let cardEffectName: Ref<string> = ref('');
+        let skills: Ref<ArmorySkills[]> = ref([]);
 
         function setArmoryEquipment(data: ArmoryEquipment[]) {
             let equipArr: ArmoryEquipment[] = [];
@@ -159,14 +233,79 @@ export default defineComponent({
             accessories.value = accesArr;
         }
 
+        function setGem(data: ArmoryGem) {
+            let gemEffects = data.Effects?.sort((a: GemEffect, b: GemEffect) => {
+                return a.GemSlot - b.GemSlot;
+            });
+
+            let tmpMhGem: Gem[] = [];
+            let tmpHyGem: Gem[] = [];
+
+            data.Gems.forEach((data: Gem, i: number) => {
+                let obj: any = new Object();
+                obj.Name = removeTag(data.Name);
+                obj.Effect = gemEffects[i];
+                obj.Level = data.Level;
+                obj.Icon = data.Icon;
+
+                if (obj.Name.indexOf("멸화") > -1) {
+                    tmpMhGem.push(obj);
+                } else {
+                    tmpHyGem.push(obj);
+                }
+            });
+
+            mhGem.value = tmpMhGem;
+            hyGem.value = tmpHyGem;
+        }
+
+        function setCardEffect(data: ArmoryCard) {
+            cards.value = typeof data.Cards === 'undefined' ? [] : data.Cards;
+            
+            let effects = typeof data.Effects[0] === 'undefined' ? null : data.Effects[0];
+            let count = 0;
+            
+            cards.value.forEach((card: Cards, i: number) => {
+                count += card.AwakeTotal;
+            });
+
+            cardEffectCount.value = count;
+
+            if (effects != null) {
+                cardEffectSize.value = effects.Items.length;
+
+                let idx = effects.Items[0].Name.search(/[0-9]/g);
+                cardEffectName.value = effects.Items[0].Name.substring(0, idx);
+            }
+        }
+
+        function setSkills(data: ArmorySkills[]) {
+            let tmp: ArmorySkills[] = [];
+
+            data.map((skill: ArmorySkills, i: number) => {
+                if (!skill.IsAwakening && (skill.Rune != null || skill.Level > 1)) {
+                    skill.Tripods = skill.Tripods.filter((tp: any) => {
+                        return tp.IsSelected;
+                    });
+
+                    tmp.push(skill);
+                }
+            });
+
+            skills.value = tmp;
+        }
+
         onMounted(() => {
             profile.value = data.value?.ArmoryProfile;
             engraving.value = data.value?.ArmoryEngraving;
 
             setArmoryEquipment(data.value?.ArmoryEquipment);
+            setGem(data.value?.ArmoryGem);
+            setCardEffect(data.value?.ArmoryCard);
+            setSkills(data.value?.ArmorySkills);
         })
 
-        return { profile, engraving, equipment, accessories };
+        return { profile, engraving, equipment, accessories, mhGem, hyGem, cards, cardEffectCount, cardEffectSize, cardEffectName, skills };
     }
 })
 </script>
