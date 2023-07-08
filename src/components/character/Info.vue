@@ -74,6 +74,9 @@
                     </div>
                 </div>
                 <Battle :data="characterInfo" v-if="tab == 'battle'"></Battle>
+                <Naesil :data="characterInfo" v-if="tab == 'naesil'"></Naesil>
+                <Avatar :data="characterInfo" v-if="tab == 'avatar'"></Avatar>
+                <Characters :data="characterInfo" v-if="tab == 'characters'"></Characters>
             </div>
         </div>
     </div>
@@ -86,12 +89,18 @@ import { useRoute } from 'vue-router';
 import { CharacterInfo } from 'CharacterInfo';
 import Loading from '../Loading.vue'
 import Battle from './Battle.vue'
+import Naesil from './Naesil.vue'
+import Avatar from './Avatar.vue'
+import Characters from './Characters.vue'
 
 export default defineComponent({
     name: 'CharacterInfo',
     components: {
         Loading: Loading,
         Battle: Battle,
+        Naesil: Naesil,
+        Avatar: Avatar,
+        Characters: Characters
     },
     setup() {
         const token = process.env.VUE_APP_LOA_API_KEY;
