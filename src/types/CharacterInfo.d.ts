@@ -163,7 +163,8 @@ declare module 'CharacterInfo' {
         CharacterName: string,
         ItemAvgLevel: string,
         ItemMaxLevel: string,
-        ServerName: string
+        ServerName: string,
+        Icon: string
     }
     
     type Collectibles = {
